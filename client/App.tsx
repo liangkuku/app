@@ -5,14 +5,17 @@
  * @format
  */
 
-import React from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Alert,
+  Button,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   useColorScheme,
   View,
 } from 'react-native';
@@ -24,6 +27,7 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import {io} from 'socket.io-client';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -61,6 +65,36 @@ function App(): React.JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  const socket = useRef(io('http://192.168.0.100:3000'))?.current;
+  const [value, setValue] = useState<string>('10');
+
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Connected', socket.id);
+      socket.emit('events', {test: 'test'});
+      // socket.emit('identity', 0, (response: any) =>
+      //   console.log('Identity:', response),
+      // );
+    });
+    socket.on('events', function (data) {
+      // console.log('event', data);
+      setValue(data);
+    });
+    socket.on('exception', function (data) {
+      console.log('event', data);
+    });
+    socket.on('disconnect', function () {
+      console.log('Disconnected');
+    });
+  }, []);
+  const [inputText, setInputText] = useState<string>('');
+  const [receiveMessage, setReceiveMessage] = useState<string>('');
+
+  const sendMessage = useCallback(() => {
+    socket.emit('identity', inputText, (response: any) => {
+      setReceiveMessage(response);
+    });
+  }, [inputText]);
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -76,10 +110,31 @@ function App(): React.JSX.Element {
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
+          <Text>回复消息：{receiveMessage}</Text>
+
+          <TextInput
+            style={{
+              height: 40,
+              borderColor: 'gray',
+              borderWidth: 1,
+            }}
+            onChangeText={text => setInputText(text)}
+            defaultValue={inputText}
+          />
+          <Button
+            onPress={() => {
+              // Alert.alert('你点击了按钮！');
+              sendMessage();
+            }}
+            title="点我！"
+          />
+          {/* <Text style={{padding: 10, fontSize: 42}}>
+            {text
+              .split(' ')
+              .map(word => word && '🍕')
+              .join(' ')}
+          </Text> */}
+          {/* <Section title="Step One">server:{value}</Section>
           <Section title="See Your Changes">
             <ReloadInstructions />
           </Section>
@@ -89,7 +144,7 @@ function App(): React.JSX.Element {
           <Section title="Learn More">
             Read the docs to discover what to do next:
           </Section>
-          <LearnMoreLinks />
+          <LearnMoreLinks /> */}
         </View>
       </ScrollView>
     </SafeAreaView>

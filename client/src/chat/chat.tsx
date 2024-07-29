@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, FC} from 'react';
 import {
   SafeAreaView,
   FlatList,
@@ -6,29 +6,25 @@ import {
   View,
   TextInput,
   Button,
+  StyleSheet,
 } from 'react-native';
 import {io} from 'socket.io-client';
-import {
-  // IRecMsgResponse,
-  // IRecMsg,
-  // ISendMsgResponse,
-  // ISendMsg,
-  IMsg,
-  IMsgResponse,
-} from './type';
+import {ChatProps, IMsg, IMsgResponse} from './type';
+import GuidUtils from '../utils/guid';
 
 /** 聊天 */
-const Chat = () => {
+const Chat: FC<ChatProps> = ({userId}) => {
   const [socket, setSocket] = useState<any>();
   const [inputMsg, setInputMsg] = useState<string>('hello world1');
   // const [recMsgs, setRecMsgs] = useState<IRecMsg[]>([]);
   // const [sendMsgs, setSendMsgs] = useState<ISendMsg[]>([]);
   const [mgs, setMsgs] = useState<IMsg[]>([]);
-  const [userId, setUserId] = useState<string>();
+  // const [userId, setUserId] = useState<string>();
 
   const sendMsg = () => {
     if (!userId || !inputMsg) return;
     const chatMessage: IMsg = {
+      id: GuidUtils.getGuid(),
       senderId: userId,
       receiverId: userId === '1' ? '2' : '1',
       msg: inputMsg,
@@ -38,10 +34,9 @@ const Chat = () => {
       if (response.status === 'success') {
         // 发送成功则显示在消息列
         setMsgs([...mgs, {...response.data}]);
-        // setSendMsgs([...sendMsgs, {...response.data}]);
       }
     });
-    setInputMsg('');
+    // setInputMsg('');
   };
 
   const recMsg = (response: IMsgResponse) => {
@@ -75,27 +70,39 @@ const Chat = () => {
 
   return (
     <SafeAreaView>
-      {/* <FlatList
-        data={recMsgs}
-        renderItem={({item}) => (
-          <Text>
-            {item.senderId}: {item.message}
-          </Text>
+      <FlatList
+        data={mgs.sort(
+          (a, b) => a.timestamp?.getTime?.() - b.timestamp?.getTime?.(),
         )}
-        keyExtractor={(item, index) => index.toString()}
-      /> */}
-      {/* <FlatList
-        data={sendMsgs}
-        renderItem={({item}) => (
-          <Text>
-            {userId}: {item.message}
-          </Text>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      /> */}
+        renderItem={({item}) => {
+          const isSelfSendMsg = item.senderId === userId;
+          return (
+            <View
+              style={[
+                styles.msgContainer,
+                {
+                  justifyContent: isSelfSendMsg ? 'flex-end' : 'flex-start',
+                },
+              ]}>
+              {isSelfSendMsg ? (
+                <View>
+                  <Text>{item.msg} :我 </Text>
+                </View>
+              ) : (
+                <View>
+                  <Text>
+                    {item.receiverId}: {item.msg}
+                  </Text>
+                </View>
+              )}
+            </View>
+          );
+        }}
+        // keyExtractor={(item, index) => item.id}
+      />
       <View>
-        <Text>User ID:</Text>
-        <TextInput defaultValue={''} onChangeText={text => setUserId(text)} />
+        <Text>User ID:{userId}</Text>
+        {/* <TextInput defaultValue={''} onChangeText={text => setUserId(text)} /> */}
       </View>
       <View>
         <TextInput
@@ -112,5 +119,27 @@ const Chat = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  msgContainer: {
+    width: '100%',
+    display: 'flex',
+    backgroundColor: 'red',
+    // marginTop: 32,
+    // paddingHorizontal: 24,
+  },
+  // sectionTitle: {
+  //   fontSize: 24,
+  //   fontWeight: '600',
+  // },
+  // sectionDescription: {
+  //   marginTop: 8,
+  //   fontSize: 18,
+  //   fontWeight: '400',
+  // },
+  // highlight: {
+  //   fontWeight: '700',
+  // },
+});
 
 export default Chat;

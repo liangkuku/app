@@ -11,7 +11,8 @@ import {
 import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
-import { ChatMessage } from './events.type';
+import { EState, IMsg, IMsgResponse } from './events.type';
+import { stat } from 'fs';
 
 @WebSocketGateway({
   cors: {
@@ -50,40 +51,40 @@ export class EventsGateway
     }
   }
 
+  private getMsgResponse(state: EState, data: IMsg) {
+    return {
+      status: state,
+      data,
+    };
+  }
+
   @SubscribeMessage('message')
-  async handleMessage(client: Socket, payload: ChatMessage) {
+  async handleMessage(client: Socket, payload: IMsg): Promise<IMsgResponse> {
     const targetSocketId = this.clients.get(payload.receiverId);
     if (!targetSocketId)
-      return {
-        status: 'error',
-        data: {
-          message: 'error receiverId',
-        },
-      };
+      return this.getMsgResponse(EState.error, {
+        ...payload,
+        msg: 'error receiverId',
+      });
 
     const targetClient = this.server.sockets.sockets.get(targetSocketId);
-    if (!targetClient)
-      return {
-        status: 'error',
-        data: {
-          message: 'error find targetClient',
-        },
-      };
+    if (!targetClient) {
+      return this.getMsgResponse(EState.error, {
+        ...payload,
+        msg: 'error find targetClient',
+      });
+    }
 
-    targetClient.emit('message', {
-      status: 'success',
-      data: {
-        message: payload.message,
-        senderId: payload.senderId,
-      },
+    targetClient.emit(
+      'message',
+      this.getMsgResponse(EState.success, {
+        ...payload,
+      }),
+    );
+
+    return this.getMsgResponse(EState.success, {
+      ...payload,
     });
-    return {
-      status: 'success',
-      data: {
-        message: payload.message,
-        receiverId: payload.receiverId,
-      },
-    };
   }
 
   //   @SubscribeMessage('events')

@@ -16,6 +16,7 @@
 type Guid = string;
 
 export interface IMsg {
+  id: Guid;
   senderId: Guid;
   receiverId: Guid;
   msg: string;
@@ -41,3 +42,6 @@ export interface IMsgResponse {
 //   status: EState;
 //   data: IRecMsg;
 // }
+export interface ChatProps {
+  userId: Guid;
+}

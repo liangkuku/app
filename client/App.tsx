@@ -1,27 +1,13 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
-  Alert,
-  Button,
-  FlatList,
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   useColorScheme,
   View,
 } from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-import {io} from 'socket.io-client';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 import Chat from './src/chat/chat';
 
 type SectionProps = PropsWithChildren<{
@@ -54,12 +40,6 @@ function Section({children, title}: SectionProps): React.JSX.Element {
   );
 }
 
-// interface IReceiverMessage {
-//   senderId: string;
-//   message: string;
-// }
-
-// const userId = '123';
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -103,9 +83,9 @@ function App(): React.JSX.Element {
 
   return (
     <SafeAreaView>
-      <Chat />
+      <Chat userId="1" />
       <Text>------</Text>
-      <Chat />
+      <Chat userId="2" />
     </SafeAreaView>
   );
 }

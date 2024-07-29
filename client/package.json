@@ -13,7 +13,9 @@
   "dependencies": {
     "react": "18.2.0",
     "react-native": "0.74.1",
-    "socket.io-client": "^4.7.5"
+    "react-native-get-random-values": "^1.11.0",
+    "socket.io-client": "^4.7.5",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -25,6 +27,7 @@
     "@react-native/typescript-config": "0.74.83",
     "@types/react": "^18.2.6",
     "@types/react-test-renderer": "^18.0.0",
+    "@types/uuid": "^10.0.0",
     "babel-jest": "^29.6.3",
     "eslint": "^8.19.0",
     "eslint-plugin-react-hooks": "^4.6.2",
